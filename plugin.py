@@ -64,6 +64,7 @@ class Bible( callbacks.Plugin ):
       url = 'http://mobile.biblegateway.com/votd/get/?format=json&version=KJV'
 
       # votd/text + votd/reference
+    votd = wrap(votd)
 
 
 Class = Bible
