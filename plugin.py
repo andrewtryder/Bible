@@ -34,7 +34,6 @@ class Bible( callbacks.Plugin ):
       m = _biblegatewayre.search( html )
 
       if m:
-        # get the title + full version
         title = re.search(r'.*meta.*title.*content="(.*?)"', html).group(1)
         title = re.sub(r'Bible Gateway passage: ', '', title)
 
