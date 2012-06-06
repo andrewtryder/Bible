@@ -1,6 +1,7 @@
 import re
 import urllib
 import urllib2
+import json
 
 import supybot.utils as utils
 from supybot.commands import *
@@ -8,8 +9,18 @@ import supybot.plugins as plugins
 import supybot.ircutils as ircutils
 import supybot.callbacks as callbacks
 
+# http://www.4-14.org.uk/xml-bible-web-service-api
+# def bible(book, chapter, verse):
+#    url = "http://api.preachingcentral.com/bible.php?passage=%s%s:%s&version=asv" % (book, chapter, verse)
+#    parsed = lxml.html.fromstring(urllib2.urlopen(url).read())
+#    b = parsed.find('range').find('item').find('bookname').text_content()
+#    c = parsed.find('range').find('item').find('chapter').text_content()
+#    v = parsed.find('range').find('item').find('verse').text_content() 
+#    t = parsed.find('range').find('item').find('text').text_content() 
+#    return "<{C4}{B}%s %s:%s{}: {B}%s{}>" % (b, c, v, t)
 
 class Bible( callbacks.Plugin ):
+    threaded = True
 
     def bible(self, irc, msg, args, translation, search):
       """<translation> <search>
@@ -61,8 +72,19 @@ class Bible( callbacks.Plugin ):
       """
 
       url = 'http://mobile.biblegateway.com/votd/get/?format=json&version=KJV'
+      response = urllib.urlopen(url)
+      json_response = response.read()
+      response_obj = json.loads(json_response)
 
-      # votd/text + votd/reference
+      text = response_obj['votd']['text']
+      text = re.sub('&[rl]dquo;', '"', text)
+      display_ref = response_obj['votd']['display_ref']
+      version_id = response_obj['votd']['version_id']
+
+      output = text + " (" + ircutils.bold(ircutils.underline(display_ref)) + " (" + version_id + "))"
+
+      irc.reply(output)
+
     votd = wrap(votd)
 
 
