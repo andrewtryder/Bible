@@ -12,8 +12,6 @@ import supybot.plugins as plugins
 import supybot.ircutils as ircutils
 import supybot.callbacks as callbacks
 
-
-
 class Bible(callbacks.Plugin):
     threaded = True
 
@@ -21,8 +19,15 @@ class Bible(callbacks.Plugin):
     def bible(self, irc, msg, args, optpassage):
         """<passage>
         Returns text from specified Bible transation matching search parameters.
-        Ex: Job 3:14
+        Ex: Job 3:14, Acts 3:17-4:2, Amos 7; Psa 119:4-16, Acts 15:1-5, 10, 15
         """
+
+        validVersions = {'akjv':'American King James Version',
+                         'asv':'American Standard Version',
+                         'douayrheims':'Douay-Rheims',
+                         'kjv':'King James Version',
+                         'web':'World English Bible',
+                         'ylt':'Youngs Literal Translation' }
 
         url = 'http://api.preachingcentral.com/bible.php?passage=' + urllib.quote(optpassage) + '&version=kjv'
 
@@ -43,7 +48,7 @@ class Bible(callbacks.Plugin):
         
         # first check for when syntax is broke. They don't give a proper error message.
         # Error return: ParseError: mismatched tag: line 1909, column 2
-        if document.find('range/result') is None:
+        if document.find('range/result') is None or document.tag == 'bible':
             irc.reply("ERROR: Failed to load/parse the verse or page. Check your syntax. ")
             return
         
