@@ -16,11 +16,14 @@ class Bible(callbacks.Plugin):
     threaded = True
 
     # http://www.4-14.org.uk/xml-bible-web-service-api
-    def bible(self, irc, msg, args, optpassage):
-        """<passage>
+    def bible(self, irc, msg, args, optlist, optpassage):
+        """[--version akjv|asv|douayrheims|kjv|web|ylt] <passage>
         Returns text from specified Bible transation matching search parameters.
         Ex: Job 3:14, Acts 3:17-4:2, Amos 7; Psa 119:4-16, Acts 15:1-5, 10, 15
+        By default, will consult KJV version. Use --version to utilize a different translation.
         """
+
+        version = 'kjv'
 
         validVersions = {'akjv':'American King James Version',
                          'asv':'American Standard Version',
@@ -29,7 +32,18 @@ class Bible(callbacks.Plugin):
                          'web':'World English Bible',
                          'ylt':'Youngs Literal Translation' }
 
-        url = 'http://api.preachingcentral.com/bible.php?passage=' + urllib.quote(optpassage) + '&version=kjv'
+        if optlist:
+            for (key, value) in optlist:
+                if key == 'version':
+                    if value.lower() not in validVersions:
+                        irc.reply("Invalid version. Version must be one of: {0}".format(validVersions.keys()))
+                        return
+                    else:
+                        version = value.lower()
+                                            
+        url = 'http://api.preachingcentral.com/bible.php?passage=' + urllib.quote(optpassage) + '&version=%s' % version
+
+        self.log.info(url)
 
         try: 
             request = urllib2.Request(url, headers={"Accept" : "application/xml"})
@@ -48,7 +62,7 @@ class Bible(callbacks.Plugin):
         
         # first check for when syntax is broke. They don't give a proper error message.
         # Error return: ParseError: mismatched tag: line 1909, column 2
-        if document.find('range/result') is None or document.tag == 'bible':
+        if document.find('range/result') is None or document.tag != 'bible':
             irc.reply("ERROR: Failed to load/parse the verse or page. Check your syntax. ")
             return
         
@@ -62,9 +76,10 @@ class Bible(callbacks.Plugin):
             chapter = node.find('chapter')
             verse = node.find('verse') 
             text = node.find('text')
-            irc.reply("{0} {1}:{2} :: {3}".format(ircutils.bold(bookname.text), ircutils.bold(chapter.text), ircutils.bold(verse.text), text.text))
+            irc.reply("[{0}] {1} {2}:{3} :: {4}".format(ircutils.mircColor(version.upper(), 'red'), ircutils.bold(bookname.text),\
+                ircutils.bold(chapter.text), ircutils.bold(verse.text), text.text))
             
-    bible = wrap(bible, [('text')])
+    bible = wrap(bible, [getopts({'version':('text')}), ('text')])
 
  
 
