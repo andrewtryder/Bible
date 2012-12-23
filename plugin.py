@@ -43,8 +43,6 @@ class Bible(callbacks.Plugin):
                                             
         url = 'http://api.preachingcentral.com/bible.php?passage=' + urllib.quote(optpassage) + '&version=%s' % version
 
-        self.log.info(url)
-
         try: 
             request = urllib2.Request(url, headers={"Accept" : "application/xml"})
             u = urllib2.urlopen(request)
@@ -58,6 +56,7 @@ class Bible(callbacks.Plugin):
             document = tree.getroot()
         except:
             irc.reply("Failed to parse XML. Check logs.")
+            self.log.error(str(u))
             return
         
         # first check for when syntax is broke. They don't give a proper error message.
