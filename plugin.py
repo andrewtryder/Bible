@@ -1,16 +1,23 @@
+###
+# Copyright (c) 2012-2013, spline
+# All rights reserved.
+#
 
-import urllib2
-import urllib
-try:
+###
+# my libs
+try:  # use cElementTree but revert back to regular ET
     import xml.etree.cElementTree as ElementTree
 except ImportError:
     import xml.etree.ElementTree as ElementTree
-
+# supybot libs
 import supybot.utils as utils
 from supybot.commands import *
 import supybot.plugins as plugins
 import supybot.ircutils as ircutils
 import supybot.callbacks as callbacks
+from supybot.i18n import PluginInternationalization, internationalizeDocstring
+
+_ = PluginInternationalization('UrbanDictionary')
 
 class Bible(callbacks.Plugin):
     threaded = True
@@ -23,8 +30,9 @@ class Bible(callbacks.Plugin):
         By default, will consult KJV version. Use --version to utilize a different translation.
         """
 
+        # set default version
         version = 'kjv'
-
+        # check optlist (getopts)
         validVersions = {'akjv':'American King James Version',
                          'asv':'American Standard Version',
                          'douayrheims':'Douay-Rheims',
@@ -36,51 +44,44 @@ class Bible(callbacks.Plugin):
             for (key, value) in optlist:
                 if key == 'version':
                     if value.lower() not in validVersions:
-                        irc.reply("Invalid version. Version must be one of: {0}".format(validVersions.keys()))
+                        irc.reply("ERROR: Invalid version. Version must be one of: {0}".format(validVersions.keys()))
                         return
                     else:
                         version = value.lower()
-                                            
-        url = 'http://api.preachingcentral.com/bible.php?passage=' + urllib.quote(optpassage) + '&version=%s' % version
-
-        try: 
-            request = urllib2.Request(url, headers={"Accept" : "application/xml"})
-            u = urllib2.urlopen(request)
-        except:
-            irc.reply("Failed to load url: %s" % url)
+        # build and fetch url.
+        url = 'http://api.preachingcentral.com/bible.php?passage='
+        url += utils.web.urlquote(optpassage) + '&version=%s' % version
+        try:
+            u = utils.web.getUrl(url)
+        except utils.web.Error as e:
+            self.log.error("ERROR opening {0} message: {1}".format(url, e))
+            irc.reply("ERROR: could not open {0} message: {1}".format(url, e))
             return
-        
         # now try to process XML.
         try:
-            tree = ElementTree.parse(u)
-            document = tree.getroot()
-        except:
-            irc.reply("Failed to parse XML. Check logs.")
-            self.log.error(str(u))
+            document = ElementTree.fromstring(u)
+        except Exception, e:
+            irc.reply("ERROR: Failed to parse XML. Check logs.")
+            self.log.error("ERROR: {0} Could not parse Bible XML. {1}".format(e, u))
             return
-        
         # first check for when syntax is broke. They don't give a proper error message.
         # Error return: ParseError: mismatched tag: line 1909, column 2
         if document.find('range/result') is None or document.tag != 'bible':
-            irc.reply("ERROR: Failed to load/parse the verse or page. Check your syntax. ")
+            irc.reply("ERROR: Failed to load/parse the verse or page. Check your syntax.")
             return
-        
-        # if you do give an invalid passage, it will spit out an error in XML. 
+        # if you do give an invalid passage, it will spit out an error in XML.
         if document.find('range/error') is not None:
             irc.reply("ERROR: '{0}' when searching for: {1}".format(document.find('range/error').text, optpassage))
             return
-        
+        # prepare output.
         for node in document.findall('range/item'):
             bookname = node.find('bookname')
             chapter = node.find('chapter')
-            verse = node.find('verse') 
+            verse = node.find('verse')
             text = node.find('text')
             irc.reply("[{0}] {1} {2}:{3} :: {4}".format(ircutils.mircColor(version.upper(), 'red'), ircutils.bold(bookname.text),\
                 ircutils.bold(chapter.text), ircutils.bold(verse.text), text.text))
-            
+
     bible = wrap(bible, [getopts({'version':('text')}), ('text')])
-
- 
-
 
 Class = Bible
