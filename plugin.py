@@ -70,17 +70,26 @@ class Bible(callbacks.Plugin):
             irc.reply("ERROR: Failed to load/parse the verse or page. Check your syntax.")
             return
         # if you do give an invalid passage, it will spit out an error in XML.
-        if document.find('range/error') is not None:
+        if document.find('range/error'):
             irc.reply("ERROR: '{0}' when searching for: {1}".format(document.find('range/error').text, optpassage))
             return
-        # prepare output.
-        for node in document.findall('range/item'):
+        # prepare output. limit to 5 lines before stopping for flood.
+        founditems = document.findall('range/item')
+        # now iterate over these.
+        for i, node in enumerate(founditems):
             bookname = node.find('bookname')
             chapter = node.find('chapter')
             verse = node.find('verse')
             text = node.find('text')
-            irc.reply("[{0}] {1} {2}:{3} :: {4}".format(ircutils.mircColor(version.upper(), 'red'), ircutils.bold(bookname.text),\
-                ircutils.bold(chapter.text), ircutils.bold(verse.text), text.text))
+            if i < 5:
+                irc.reply("[{0}] {1} {2}:{3} :: {4}".format(ircutils.mircColor(version.upper(), 'red'),\
+                                                        ircutils.bold(bookname.text),\
+                                                        ircutils.bold(chapter.text),\
+                                                        ircutils.bold(verse.text),\
+                                                        text.text))
+            else:
+                irc.reply("ERROR: I have more than 5 matching passages from your query ({0} left). Please be more specific.".format(len(founditems)-5))
+                break
 
     bible = wrap(bible, [getopts({'version':('text')}), ('text')])
 
