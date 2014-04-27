@@ -5,12 +5,13 @@
 
 Purpose
 
-    Plugin for a friend to display Bible passages. Uses a simple XML api.
+    Plugin for a friend to display Bible passages. 
+ 
     Can display akjv|asv|douayrheims|kjv|web|ylt versions.
 
 Requirements
 
-    Working Limnoria setup on Python 2.7+
+    Working [Limnoria](http://github.com/ProgVal/Limnoria) setup on Python 2.7+
 
 Instructions
     
