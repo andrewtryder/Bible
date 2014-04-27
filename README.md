@@ -1,17 +1,26 @@
-Supybot-Bible
-=============
+# Supybot-Bible
+
+
+
 
 Purpose
 
     Plugin for a friend to display Bible passages. Uses a simple XML api.
     Can display akjv|asv|douayrheims|kjv|web|ylt versions.
 
+Requirements
+
+    Working Limnoria setup on Python 2.7+
+
 Instructions
     
-    Should work fine on an up-to-date supybot/Limnoria install. I develop on python 2.7.3 but a 2.6+
-    install should be fine. The module uses the built-in ElementTree module.
-    Just grab the plugin, load it, and you should be good to go.
+    Go to your Limnoria plugin directory (usually ~/supybot/plugins) and fetch the plugin:
     
+    git clone https://github.com/reticulatingspline/Supybot-Bible.git Bible
+    
+    This will load the plugin into your plugins directory under "Bible". Then, on IRC,
+    /msg <yourbot> load Bible
+
 Commands
 
     - bible [--version akjv|asv|douayrheims|kjv|web|ylt] <passage> (Ex: Job 3:14)
