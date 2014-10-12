@@ -82,7 +82,10 @@ class Bible(callbacks.Plugin):
             verse = node.find('verse')
             text = node.find('text')
             if i < 5:
-                irc.reply("[{0}] {1} {2}:{3} :: {4}".format(ircutils.mircColor(version.upper(), 'red'),\
+                if self.registryValue('disableANSI', msg.args[0]):  # disable ANSI.
+                    irc.reply("[{0}] {1} {2}:{3} :: {4}".format(version.upper(), bookname.text, chapter.text, verse.text))
+                else:    
+                    irc.reply("[{0}] {1} {2}:{3} :: {4}".format(ircutils.mircColor(version.upper(), 'red'),\
                                                         ircutils.bold(bookname.text),\
                                                         ircutils.bold(chapter.text),\
                                                         ircutils.bold(verse.text),\
