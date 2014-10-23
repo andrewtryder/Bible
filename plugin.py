@@ -15,9 +15,14 @@ from supybot.commands import *
 import supybot.plugins as plugins
 import supybot.ircutils as ircutils
 import supybot.callbacks as callbacks
-from supybot.i18n import PluginInternationalization, internationalizeDocstring
+try:
+    from supybot.i18n import PluginInternationalization
+    _ = PluginInternationalization('WorldTime')
+except ImportError:
+    # Placeholder that allows to run the plugin on a bot
+    # without the i18n module
+    _ = lambda x:x
 
-_ = PluginInternationalization('UrbanDictionary')
 
 class Bible(callbacks.Plugin):
     threaded = True
@@ -53,14 +58,14 @@ class Bible(callbacks.Plugin):
         url += utils.web.urlquote(optpassage) + '&version=%s' % version
         try:
             u = utils.web.getUrl(url)
-        except utils.web.Error as e:
+        except Exception as e:
             self.log.error("ERROR opening {0} message: {1}".format(url, e))
             irc.reply("ERROR: could not open {0} message: {1}".format(url, e))
             return
         # now try to process XML.
         try:
             document = ElementTree.fromstring(u)
-        except Exception, e:
+        except Exception as e:
             irc.reply("ERROR: Failed to parse XML. Check logs.")
             self.log.error("ERROR: {0} Could not parse Bible XML. {1}".format(e, u))
             return
