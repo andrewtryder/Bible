@@ -14,6 +14,7 @@ script:
 notifications:
     email: false
     irc: "irc.efnet.net#supybot"
+    webhooks: http://n.tkte.ch/h/3503/ZpIHLv6U8RVKXeMHEVzDPgeb
 matrix:
     fast_finish: true
 
