@@ -27,10 +27,13 @@ __contributors__ = {}
 # This is a url where the most recent plugin package can be downloaded.
 __url__ = '' # 'http://supybot.com/Members/yourname/Bible/download'
 
-import config
-import plugin
+from . import config
+from . import plugin
+from imp import reload
+# In case we're being reloaded.
 reload(config)
-reload(plugin) # In case we're being reloaded.
+reload(plugin)
+
 # Add more reloads here if you add third-party modules and want them to be
 # reloaded when this plugin is reloaded.  Don't forget to import them as well!
 
